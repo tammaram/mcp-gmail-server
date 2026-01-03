@@ -30,7 +30,6 @@ server.tool(
     try {
       const gmail = await getGmailClient();
       
-      // 1. Fetch unread message IDs
       const res = await gmail.users.messages.list({
         userId: 'me',
         q: 'is:unread',
@@ -42,7 +41,6 @@ server.tool(
         return { content: [{ type: "text", text: "No unread emails found." }] };
       }
 
-      // 2. Map through IDs to get actual content
       const details = await Promise.all(
         messages.map(async (msg) => {
           const m = await gmail.users.messages.get({ 
@@ -52,11 +50,11 @@ server.tool(
           
           const headers = m.data.payload?.headers;
           return {
-            id: m.data.id,
+            email_id: m.data.id,       // The ID for this specific email
+            thread_id: m.data.threadId, // The ID for the whole conversation
             from: headers?.find(h => h.name === 'From')?.value,
             subject: headers?.find(h => h.name === 'Subject')?.value,
-            date: headers?.find(h => h.name === 'Date')?.value,
-            snippet: m.data.snippet
+            snippet: m.data.snippet    // This is the preview/body snippet
           };
         })
       );
@@ -68,9 +66,8 @@ server.tool(
         }]
       };
     } catch (error: any) {
-      console.error("Tool Error:", error);
       return {
-        content: [{ type: "text", text: `Error fetching emails: ${error.message}` }]
+        content: [{ type: "text", text: `Error: ${error.message}` }]
       };
     }
   }
