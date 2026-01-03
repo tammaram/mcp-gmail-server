@@ -2,6 +2,51 @@
 
 A Model Context Protocol (MCP) server that connects Claude Desktop to your Gmail. This server allows an AI to intelligently manage your inbox by reading unread messages and preparing threaded draft replies.
 
+## 📺 Working Demo
+
+### 1. Connecting to the Server
+Claude Desktop identifies the local MCP server and loads the custom Gmail tools.
+![Claude MCP Config](./screenshots/claude_local_mcp_server.png)
+
+### 2. Reading Unread Emails
+Claude uses the `get_unread_emails` tool to fetch the latest messages, subjects, and thread IDs.
+![Get Unread Emails](./screenshots/get_unread_emails.png)
+
+### 3. Creating a Draft Reply
+Claude analyzes the context and calls `create_draft_reply` to generate a response.
+![Create Draft Reply](./screenshots/create_draft_reply.png)
+
+### 4. Result in Gmail
+The final result: a perfectly threaded draft waiting in your Gmail inbox.
+![Gmail Drafts](./screenshots/draft_email_in_gmail.png)
+
+---
+
+## ⚙️ Configuration
+
+To connect this server to Claude Desktop, you must document your local path in the configuration file.
+
+**File Path:** * macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+**Your `claude_desktop_config.json` should look like this:**
+
+```json
+{
+  "mcpServers": {
+    "gmail-manager": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "ts-node",
+        "/Users/YOUR_USER/PATH_TO_FOLDER/index.ts"
+      ],
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      }
+    }
+  }
+}
+
 ## 🚀 Features
 
 * **`get_unread_emails`**: Fetches a list of unread emails. Returns sender, subject, a snippet of the body, and the Thread ID.
