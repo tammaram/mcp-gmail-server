@@ -73,6 +73,77 @@ server.tool(
   }
 );
 
+// Tool: Create Draft Reply
+server.tool(
+  "create_draft_reply",
+  {
+    thread_id: z.string().describe("The thread ID of the email you are replying to"),
+    reply_body: z.string().describe("The text content of your reply")
+  },
+  async ({ thread_id, reply_body }) => {
+    try {
+      const gmail = await getGmailClient();
+
+      // 1. We first fetch the original thread to get the Subject and Sender
+      const thread = await gmail.users.threads.get({
+        userId: 'me',
+        id: thread_id,
+      });
+
+      const firstMsg = thread.data.messages?.[0];
+      const headers = firstMsg?.payload?.headers;
+      
+      const subject = headers?.find(h => h.name === 'Subject')?.value || "";
+      const to = headers?.find(h => h.name === 'From')?.value || "";
+      const messageId = headers?.find(h => h.name === 'Message-ID')?.value || "";
+
+      // 2. Construct the email with correct headers for threading
+      // 'In-Reply-To' and 'References' are what keep the thread together
+      const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+      const emailLines = [
+        `To: ${to}`,
+        `Subject: Re: ${utf8Subject}`,
+        `In-Reply-To: ${messageId}`,
+        `References: ${messageId}`,
+        'Content-Type: text/plain; charset=utf-8',
+        'MIME-Version: 1.0',
+        '',
+        reply_body,
+      ];
+      const email = emailLines.join('\r\n');
+
+      // 3. Encode the email in base64url format
+      const encodedEmail = Buffer.from(email)
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+
+      // 4. Create the draft
+      const res = await gmail.users.drafts.create({
+        userId: 'me',
+        requestBody: {
+          message: {
+            threadId: thread_id,
+            raw: encodedEmail,
+          },
+        },
+      });
+
+      return {
+        content: [{ 
+          type: "text", 
+          text: `Draft created successfully! Draft ID: ${res.data.id}` 
+        }]
+      };
+    } catch (error: any) {
+      return {
+        content: [{ type: "text", text: `Error creating draft: ${error.message}` }]
+      };
+    }
+  }
+);
+
 // 3. Start the server using Stdio transport (required for Claude Desktop)
 async function main() {
   const transport = new StdioServerTransport();
