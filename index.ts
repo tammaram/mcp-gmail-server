@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { getGmailClient } from "./auth.ts";
 
 // 1. Create the MCP Server instance
 const server = new McpServer({
@@ -16,6 +17,62 @@ server.tool(
     return {
       content: [{ type: "text", text: `Hello ${name}! Your MCP server is running.` }]
     };
+  }
+);
+
+// Tool: Get Unread Emails
+server.tool(
+  "get_unread_emails",
+  { 
+    max_results: z.number().optional().default(5) 
+  },
+  async ({ max_results }) => {
+    try {
+      const gmail = await getGmailClient();
+      
+      // 1. Fetch unread message IDs
+      const res = await gmail.users.messages.list({
+        userId: 'me',
+        q: 'is:unread',
+        maxResults: max_results,
+      });
+
+      const messages = res.data.messages || [];
+      if (messages.length === 0) {
+        return { content: [{ type: "text", text: "No unread emails found." }] };
+      }
+
+      // 2. Map through IDs to get actual content
+      const details = await Promise.all(
+        messages.map(async (msg) => {
+          const m = await gmail.users.messages.get({ 
+            userId: 'me', 
+            id: msg.id! 
+          });
+          
+          const headers = m.data.payload?.headers;
+          return {
+            id: m.data.id,
+            from: headers?.find(h => h.name === 'From')?.value,
+            subject: headers?.find(h => h.name === 'Subject')?.value,
+            date: headers?.find(h => h.name === 'Date')?.value,
+            snippet: m.data.snippet
+          };
+        })
+      );
+
+      return {
+        content: [{ 
+          type: "text", 
+          text: `Found ${details.length} unread emails:\n\n${JSON.stringify(details, null, 2)}` 
+        }]
+      };
+    } catch (error: any) {
+      console.error("Tool Error:", error);
+      return {
+        content: [{ type: "text", text: `Error fetching emails: ${error.message}` }]
+      };
+    }
   }
 );
 
