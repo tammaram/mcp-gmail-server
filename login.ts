@@ -7,6 +7,10 @@ const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.g
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
+/**
+ * Authorizes the application using OAuth2 and stores the access token.
+ * Prompts the user to visit an authorization URL and enter the provided code.
+ */
 async function authorize() {
   const content = await fs.readFile(CREDENTIALS_PATH, 'utf8');
   const keys = JSON.parse(content);

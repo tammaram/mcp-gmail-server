@@ -8,6 +8,11 @@ A Model Context Protocol (MCP) server that connects Claude Desktop to your Gmail
 * **`create_draft_reply`**: Creates a professional draft in your Gmail. It automatically handles threading headers (`In-Reply-To`, `References`) so the reply stays in the original conversation.
 * **Secure OAuth2**: Uses official Google Cloud credentials and local token storage.
 
+## 💬 Prompts to use
+
+* *"Scan any unread emails. For each one, create a draft reply that handles the request appropriately so I just have to hit send later.*
+* *"Hey Claude, use your Gmail tool to check my unread emails and summarize them for me."*
+
 ## 🛠 Prerequisites
 
 * **Node.js**: v18.0.0 or higher.
@@ -50,3 +55,13 @@ To use this with Claude Desktop, add the following to your `claude_desktop_confi
     }
   }
 }
+```
+
+## 🔒 Security
+This server is designed with privacy in mind:
+
+* **Exclusion**: `credentials.json` and `token.json` are included in `.gitignore` to prevent accidental leaks.
+
+* **Scoped Access**: The server only has `gmail.readonly` and `gmail.compose` scopes; it cannot delete your emails.
+
+* **Local Processing**: Your email data is never stored on a 3rd party server; it moves directly between your local machine and the Gmail API.

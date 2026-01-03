@@ -1,5 +1,9 @@
 import { getGmailClient } from "./auth.ts";
 
+/**
+ * Tests the Gmail API connection by retrieving the user's profile information.
+ * Logs the connected email address and total message count on success.
+ */
 async function testConnection() {
   try {
     console.log("Checking Gmail connection...");

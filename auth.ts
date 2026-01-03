@@ -14,6 +14,12 @@ const SCOPES = [
   'https://www.googleapis.com/auth/gmail.compose'
 ];
 
+/**
+ * Initializes and returns an authenticated Gmail API client.
+ * Requires token.json to exist. Run 'npx ts-node login.ts' to generate it.
+ * @returns Authenticated Gmail API client instance
+ * @throws Error if token.json is not found
+ */
 export async function getGmailClient() {
   const content = await fs.readFile(CREDENTIALS_PATH, 'utf8');
   const keys = JSON.parse(content);
