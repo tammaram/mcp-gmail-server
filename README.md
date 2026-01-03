@@ -46,6 +46,7 @@ To connect this server to Claude Desktop, you must document your local path in t
     }
   }
 }
+```
 
 ## 🚀 Features
 
@@ -82,25 +83,6 @@ To connect this server to Claude Desktop, you must document your local path in t
         npx ts-node login.ts
         ```
     * Follow the URL in your browser, authorize the app, and when you reach the "localhost" error page, copy the `code=` value from the URL bar back into your terminal.
-
-## ⚙️ Configuration
-
-To use this with Claude Desktop, add the following to your `claude_desktop_config.json` (usually found at `~/Library/Application Support/Claude/claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "gmail-server": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "ts-node",
-        "/Users/YOUR_USER/mcpserver/index.ts"
-      ]
-    }
-  }
-}
-```
 
 ## 🔒 Security
 This server is designed with privacy in mind:
